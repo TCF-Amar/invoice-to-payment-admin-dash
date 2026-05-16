@@ -21,6 +21,8 @@ export default function VendorUpload() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
 
+    console.log(error);
+    
     if (!token) {
       setError('Invalid or expired upload link');
       setIsValidating(false);
@@ -84,14 +86,15 @@ export default function VendorUpload() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('vendorEmail', vendorEmail);
-      formData.append('token', uploadToken.token);
+      if (uploadToken.vendorId) {
+        formData.append('vendorId', uploadToken.vendorId);
+      }
       if (poNumber) {
         formData.append('poNumber', poNumber);
       }
 
-      // This would be replaced with actual file upload endpoint
-      // For now, we'll simulate the upload
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Upload invoice using the API endpoint
+      await invoiceService.uploadInvoice(formData);
 
       setUploadSuccess(true);
       toast.success('Invoice uploaded successfully');

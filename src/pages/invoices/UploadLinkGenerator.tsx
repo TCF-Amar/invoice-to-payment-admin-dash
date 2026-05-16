@@ -32,15 +32,18 @@ export default function UploadLinkGenerator() {
     setIsLoading(true);
     try {
       const payload: SendUploadLinkPayload = {
+        uploadUrl: "",
         vendorEmail,
         poNumber: poNumber || undefined,
         expiresIn,
       };
 
       const response = await invoiceService.generateUploadLink(payload);
-      const url = buildUploadUrl(response.token);
       
-      setGeneratedToken(response.token);
+      // Use url from response if available, otherwise build it from token
+      const url = response.url || buildUploadUrl(response.token || '');
+      
+      setGeneratedToken(response.token || '');
       setGeneratedUrl(url);
       setEmailSent(false);
       toast.success('Upload link generated');
@@ -63,14 +66,21 @@ export default function UploadLinkGenerator() {
       return;
     }
 
+    if (!generatedUrl) {
+      toast.error('Upload URL is missing. Please generate the link again.');
+      return;
+    }
+
     setIsSendingEmail(true);
     try {
       const payload: SendUploadLinkPayload = {
         vendorEmail,
         poNumber: poNumber || undefined,
         expiresIn,
+        uploadUrl: generatedUrl,
       };
 
+      console.log('Sending email with payload:', payload);
       await invoiceService.sendUploadLink(payload);
       setEmailSent(true);
       toast.success('Upload link sent to vendor email');

@@ -12,7 +12,7 @@ import { useFilterStore } from '@/store/useFilterStore';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
-import { InvoiceStatus } from '@/types';
+import { InvoiceStatus, Invoice } from '@/types';
 
 const INVOICE_STATUSES: { value: InvoiceStatus | ''; label: string }[] = [
   { value: '', label: 'All Invoices' },
@@ -39,7 +39,7 @@ export default function InvoiceList() {
   const { data, isLoading, error } = useInvoices({ status: invoiceStatus || undefined, page: 1, limit: 20 });
 
   // Filter data based on search query
-  const filteredData = data?.items?.filter((invoice: any) =>
+  const filteredData = data?.items?.filter((invoice: Invoice) =>
     invoice.invoiceNumber.toLowerCase().includes(invoiceSearch.toLowerCase()) ||
     invoice.vendorName?.toLowerCase().includes(invoiceSearch.toLowerCase()) ||
     invoice.poNumber?.toLowerCase().includes(invoiceSearch.toLowerCase())
@@ -55,12 +55,6 @@ export default function InvoiceList() {
       <PageHeader
         title="Invoices"
         description="Manage your invoices"
-        action={
-          <Button variant="primary" onClick={() => navigate('/invoices/upload-link')}>
-            <Plus className="h-4 w-4" />
-            Generate Upload Link
-          </Button>
-        }
       />
 
       {/* Status Filter */}
@@ -153,7 +147,7 @@ export default function InvoiceList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((invoice: any) => (
+                  {filteredData.map((invoice: Invoice) => (
                     <tr
                       key={invoice.id}
                       className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
@@ -195,8 +189,7 @@ export default function InvoiceList() {
             <EmptyState
               icon={Plus}
               title="No invoices found"
-              description={invoiceSearch ? 'Try adjusting your search' : invoiceStatus ? `No invoices with status "${invoiceStatus}"` : 'Generate a secure link to send to vendors'}
-              action={{ label: 'Generate Upload Link', onClick: () => navigate('/invoices/upload-link') }}
+              description={invoiceSearch ? 'Try adjusting your search' : invoiceStatus ? `No invoices with status "${invoiceStatus}"` : 'No invoices available'}
             />
           )}
         </CardContent>

@@ -10,7 +10,6 @@ import POCreate from '@/pages/purchase-orders/POCreate';
 import PODetail from '@/pages/purchase-orders/PODetail';
 import InvoiceList from '@/pages/invoices/InvoiceList';
 import InvoiceDetail from '@/pages/invoices/InvoiceDetail';
-import UploadLinkGenerator from '@/pages/invoices/UploadLinkGenerator';
 import VendorUpload from '@/pages/invoices/VendorUpload';
 import PayoutDashboard from '@/pages/payouts/PayoutDashboard';
 import TicketList from '@/pages/tickets/TicketList';
@@ -31,7 +30,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
-          <Route path="/vendor-upload" element={<VendorUpload />} />
+          <Route path="/upload-invoice" element={<VendorUpload />} />
           <Route
             path="/*"
             element={
@@ -45,7 +44,6 @@ function App() {
                   <Route path="/purchase-orders/:id" element={<PODetail />} />
                   <Route path="/invoices" element={<InvoiceList />} />
                   <Route path="/invoices/:id" element={<InvoiceDetail />} />
-                  <Route path="/invoices/upload-link" element={<UploadLinkGenerator />} />
                   <Route path="/payouts" element={<PayoutDashboard />} />
                   <Route path="/tickets" element={<TicketList />} />
                   <Route path="/tickets/:id" element={<TicketDetail />} />

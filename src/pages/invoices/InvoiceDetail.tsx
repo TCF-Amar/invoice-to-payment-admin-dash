@@ -1,39 +1,41 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, AlertCircle, ExternalLink } from 'lucide-react';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Modal } from '@/components/ui/Modal';
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
-import { useInvoice, useUpdateInvoiceStatus } from '@/hooks/useInvoices';
-import { usePurchaseOrders } from '@/hooks/usePurchaseOrders';
-import { useVendors } from '@/hooks/useVendors';
-import { formatCurrency } from '@/utils/formatCurrency';
-import { formatDate } from '@/utils/formatDate';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/useInvoices";
+import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
+import { useVendors } from "@/hooks/useVendors";
+import { formatCurrency } from "@/utils/formatCurrency";
+import { formatDate } from "@/utils/formatDate";
+import toast from "react-hot-toast";
 
 export default function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  
-  const { data: invoice, isLoading } = useInvoice(id || '');
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const { data: invoice, isLoading } = useInvoice(id || "");
   const { data: vendorsData } = useVendors({ limit: 100 });
   const { data: posData } = usePurchaseOrders({ limit: 100 });
-  const updateStatusMutation = useUpdateInvoiceStatus(id || '');
+  const updateStatusMutation = useUpdateInvoiceStatus(id || "");
 
   // Find related vendor and PO
   const vendor = vendorsData?.items?.find((v) => v.id === invoice?.vendorId);
-  const po = invoice?.poNumber ? posData?.items?.find((p) => p.poNumber === invoice.poNumber) : null;
+  const po = invoice?.poNumber
+    ? posData?.items?.find((p) => p.poNumber === invoice.poNumber)
+    : null;
 
   const handleApprove = async () => {
     try {
-      await updateStatusMutation.mutateAsync({ status: 'approved' });
-      toast.success('Invoice approved');
-      setTimeout(() => navigate('/invoices'), 1500);
+      await updateStatusMutation.mutateAsync({ status: "approved" });
+      toast.success("Invoice approved");
+      setTimeout(() => navigate("/invoices"), 1500);
     } catch {
       // Error handled by mutation
     }
@@ -41,14 +43,17 @@ export default function InvoiceDetail() {
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast.error('Please provide a rejection reason');
+      toast.error("Please provide a rejection reason");
       return;
     }
     try {
-      await updateStatusMutation.mutateAsync({ status: 'rejected', rejectionReason });
-      toast.success('Invoice rejected');
+      await updateStatusMutation.mutateAsync({
+        status: "rejected",
+        rejectionReason,
+      });
+      toast.success("Invoice rejected");
       setShowRejectModal(false);
-      setTimeout(() => navigate('/invoices'), 1500);
+      setTimeout(() => navigate("/invoices"), 1500);
     } catch {
       // Error handled by mutation
     }
@@ -57,7 +62,7 @@ export default function InvoiceDetail() {
   if (isLoading) {
     return (
       <div>
-        <PageHeader title="Invoice Details" onBack={() => navigate('/invoices')} />
+        <PageHeader title="Invoice Details" onBack={() => navigate(-1)} />
         <Card>
           <CardContent className="pt-6">
             <LoadingSkeleton count={5} height="h-12" />
@@ -68,15 +73,28 @@ export default function InvoiceDetail() {
   }
 
   if (!invoice) {
-    return <div className="text-center py-12 text-slate-400">Invoice not found</div>;
+    return (
+      <div className="text-center py-12 text-slate-400">Invoice not found</div>
+    );
   }
 
-  const canApprove = invoice.status === 'received' || invoice.status === 'processing' || invoice.status === 'validated' || invoice.status === 'review_pending';
-  const canReject = invoice.status === 'received' || invoice.status === 'processing' || invoice.status === 'validated' || invoice.status === 'review_pending';
+  const canApprove =
+    invoice.status === "received" ||
+    invoice.status === "processing" ||
+    invoice.status === "validated" ||
+    invoice.status === "review_pending";
+  const canReject =
+    invoice.status === "received" ||
+    invoice.status === "processing" ||
+    invoice.status === "validated" ||
+    invoice.status === "review_pending";
 
   return (
     <div>
-      <PageHeader title={invoice.invoiceNumber} onBack={() => navigate('/invoices')} />
+      <PageHeader
+        title={invoice.invoiceNumber}
+        onBack={() => navigate(-1)}
+      />
 
       {/* Invoice Preview */}
       <Card className="mb-6 bg-white/5 backdrop-blur-md">
@@ -85,7 +103,9 @@ export default function InvoiceDetail() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-slate-400">Invoice Number</p>
-                <p className="mt-1 text-lg font-semibold text-slate-100">{invoice.invoiceNumber}</p>
+                <p className="mt-1 text-lg font-semibold text-slate-100">
+                  {invoice.invoiceNumber}
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <Badge status={invoice.status} />
@@ -106,38 +126,52 @@ export default function InvoiceDetail() {
               <div>
                 <p className="text-sm text-slate-400">Invoice Date</p>
                 <p className="mt-1 text-slate-100">
-                  {invoice.invoiceDate ? formatDate(invoice.invoiceDate) : '-'}
+                  {invoice.invoiceDate ? formatDate(invoice.invoiceDate) : "-"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">Due Date</p>
                 <p className="mt-1 text-slate-100">
-                  {invoice.dueDate ? formatDate(invoice.dueDate) : '-'}
+                  {invoice.dueDate ? formatDate(invoice.dueDate) : "-"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">PO Number</p>
-                <p className="mt-1 text-slate-100">{invoice.poNumber || '-'}</p>
+                <p className="mt-1 text-slate-100">{invoice.poNumber || "-"}</p>
               </div>
             </div>
 
             {invoice.lineItems && invoice.lineItems.length > 0 && (
               <div>
-                <p className="mb-4 text-sm font-medium text-slate-400">Line Items</p>
+                <p className="mb-4 text-sm font-medium text-slate-400">
+                  Line Items
+                </p>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/10">
-                      <th className="px-4 py-2 text-left text-slate-400">Description</th>
-                      <th className="px-4 py-2 text-right text-slate-400">Qty</th>
-                      <th className="px-4 py-2 text-right text-slate-400">Unit Price</th>
-                      <th className="px-4 py-2 text-right text-slate-400">Total</th>
+                      <th className="px-4 py-2 text-left text-slate-400">
+                        Description
+                      </th>
+                      <th className="px-4 py-2 text-right text-slate-400">
+                        Qty
+                      </th>
+                      <th className="px-4 py-2 text-right text-slate-400">
+                        Unit Price
+                      </th>
+                      <th className="px-4 py-2 text-right text-slate-400">
+                        Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {invoice.lineItems.map((item, idx) => (
                       <tr key={idx} className="border-b border-white/5">
-                        <td className="px-4 py-2 text-slate-100">{item.description}</td>
-                        <td className="px-4 py-2 text-right text-slate-100">{item.qty}</td>
+                        <td className="px-4 py-2 text-slate-100">
+                          {item.description}
+                        </td>
+                        <td className="px-4 py-2 text-right text-slate-100">
+                          {item.qty}
+                        </td>
                         <td className="px-4 py-2 text-right text-slate-100">
                           {formatCurrency(item.unitPrice, invoice.currency)}
                         </td>
@@ -156,11 +190,15 @@ export default function InvoiceDetail() {
                 <div className="w-64">
                   <div className="flex justify-between mb-2">
                     <span className="text-slate-400">Subtotal</span>
-                    <span className="text-slate-100">{formatCurrency(invoice.totalAmount, invoice.currency)}</span>
+                    <span className="text-slate-100">
+                      {formatCurrency(invoice.totalAmount, invoice.currency)}
+                    </span>
                   </div>
                   <div className="flex justify-between font-semibold text-lg border-t border-white/10 pt-2">
                     <span className="text-slate-100">Total</span>
-                    <span className="text-indigo-400">{formatCurrency(invoice.totalAmount, invoice.currency)}</span>
+                    <span className="text-indigo-400">
+                      {formatCurrency(invoice.totalAmount, invoice.currency)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -168,8 +206,12 @@ export default function InvoiceDetail() {
 
             {invoice.rejectionReason && (
               <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-lg">
-                <p className="text-sm font-medium text-rose-400 mb-1">Rejection Reason</p>
-                <p className="text-sm text-rose-300">{invoice.rejectionReason}</p>
+                <p className="text-sm font-medium text-rose-400 mb-1">
+                  Rejection Reason
+                </p>
+                <p className="text-sm text-rose-300">
+                  {invoice.rejectionReason}
+                </p>
               </div>
             )}
           </div>
@@ -180,7 +222,9 @@ export default function InvoiceDetail() {
       {vendor && (
         <Card className="mb-6">
           <CardHeader>
-            <h2 className="text-lg font-semibold text-slate-100">Vendor Details</h2>
+            <h2 className="text-lg font-semibold text-slate-100">
+              Vendor Details
+            </h2>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-6">
@@ -194,7 +238,7 @@ export default function InvoiceDetail() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Phone</p>
-                <p className="mt-1 text-slate-100">{vendor.phone || '-'}</p>
+                <p className="mt-1 text-slate-100">{vendor.phone || "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">Status</p>
@@ -211,11 +255,11 @@ export default function InvoiceDetail() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Address</p>
-                <p className="mt-1 text-slate-100">{vendor.address || '-'}</p>
+                <p className="mt-1 text-slate-100">{vendor.address || "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">GSTIN</p>
-                <p className="mt-1 text-slate-100">{vendor.gstin || '-'}</p>
+                <p className="mt-1 text-slate-100">{vendor.gstin || "-"}</p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-white/10">
@@ -236,7 +280,9 @@ export default function InvoiceDetail() {
       {po && (
         <Card className="mb-6">
           <CardHeader>
-            <h2 className="text-lg font-semibold text-slate-100">Purchase Order Details</h2>
+            <h2 className="text-lg font-semibold text-slate-100">
+              Purchase Order Details
+            </h2>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-6">
@@ -252,19 +298,25 @@ export default function InvoiceDetail() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Approved Amount</p>
-                <p className="mt-1 text-slate-100">{formatCurrency(po.approvedAmount, po.currency)}</p>
+                <p className="mt-1 text-slate-100">
+                  {formatCurrency(po.approvedAmount, po.currency)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">Remaining Amount</p>
-                <p className="mt-1 text-slate-100">{formatCurrency(po.remainingAmount, po.currency)}</p>
+                <p className="mt-1 text-slate-100">
+                  {formatCurrency(po.remainingAmount, po.currency)}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">Delivery Date</p>
-                <p className="mt-1 text-slate-100">{po.deliveryDate ? formatDate(po.deliveryDate) : '-'}</p>
+                <p className="mt-1 text-slate-100">
+                  {po.deliveryDate ? formatDate(po.deliveryDate) : "-"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-slate-400">Description</p>
-                <p className="mt-1 text-slate-100">{po.description || '-'}</p>
+                <p className="mt-1 text-slate-100">{po.description || "-"}</p>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-white/10">
@@ -287,8 +339,12 @@ export default function InvoiceDetail() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-100">Manual Review</p>
-                <p className="text-xs text-slate-400 mt-1">Approve or reject this invoice after review</p>
+                <p className="text-sm font-medium text-slate-100">
+                  Manual Review
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Approve or reject this invoice after review
+                </p>
               </div>
               <div className="flex gap-3">
                 <Button
@@ -317,7 +373,8 @@ export default function InvoiceDetail() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-slate-400">
-              This invoice cannot be modified in its current status ({invoice.status})
+              This invoice cannot be modified in its current status (
+              {invoice.status})
             </p>
           </CardContent>
         </Card>
@@ -328,13 +385,15 @@ export default function InvoiceDetail() {
         isOpen={showRejectModal}
         onClose={() => {
           setShowRejectModal(false);
-          setRejectionReason('');
+          setRejectionReason("");
         }}
         title="Reject Invoice"
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-100 mb-2">Rejection Reason *</label>
+            <label className="block text-sm font-medium text-slate-100 mb-2">
+              Rejection Reason *
+            </label>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
@@ -349,7 +408,7 @@ export default function InvoiceDetail() {
               variant="ghost"
               onClick={() => {
                 setShowRejectModal(false);
-                setRejectionReason('');
+                setRejectionReason("");
               }}
               className="flex-1"
             >

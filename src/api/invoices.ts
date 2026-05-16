@@ -1,5 +1,5 @@
 import api from './client';
-import { Invoice, CreateInvoicePayload, PaginatedResponse, InvoiceStatus, UploadToken, SendUploadLinkPayload } from '@/types';
+import { Invoice, CreateInvoicePayload, PaginatedResponse, InvoiceStatus, UploadToken, SendUploadLinkPayload, GeneratedLinkMetadata, InvoiceUploadResponse } from '@/types';
 
 // Helper to convert array response to paginated format
 const toPaginatedResponse = <T,>(data: T[] | PaginatedResponse<T> | any): PaginatedResponse<T> => {
@@ -76,8 +76,10 @@ export const invoiceService = {
 
   // Upload link management
   generateUploadLink: async (payload: SendUploadLinkPayload) => {
-    const response = await api.post<UploadToken>('/invoices/upload-links/generate', payload);
-    return response as unknown as UploadToken;
+    const response = await api.post<GeneratedLinkMetadata>('/invoices/upload-links/generate', payload);
+    console.log(response);
+    
+    return response as unknown as GeneratedLinkMetadata;
   },
 
   sendUploadLink: async (payload: SendUploadLinkPayload) => {
@@ -88,5 +90,14 @@ export const invoiceService = {
   validateUploadToken: async (token: string) => {
     const response = await api.get<UploadToken>(`/invoices/upload-links/validate/${token}`);
     return response as unknown as UploadToken;
+  },
+
+  uploadInvoice: async (formData: FormData) => {
+    const response = await api.post<InvoiceUploadResponse>('/invoices/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response as unknown as InvoiceUploadResponse;
   },
 };

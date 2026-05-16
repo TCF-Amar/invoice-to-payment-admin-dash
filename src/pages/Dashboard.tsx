@@ -12,8 +12,17 @@ import { useApprovedUnpaidInvoices } from '@/hooks/useInvoices';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
+import { Invoice } from '@/types';
+import { LucideIcon } from 'lucide-react';
 
-const KPICard = ({ icon: Icon, label, value, loading }: any) => (
+interface KPICardProps {
+  icon: LucideIcon;
+  label: string;
+  value: string | number;
+  loading?: boolean;
+}
+
+const KPICard = ({ icon: Icon, label, value, loading }: KPICardProps) => (
   <Card>
     <CardContent className="pt-6">
       <div className="flex items-start justify-between">
@@ -50,16 +59,10 @@ export default function Dashboard() {
         title="Dashboard"
         description="Welcome back! Here's your business overview."
         action={
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate('/purchase-orders/new')}>
-              <Plus className="h-4 w-4" />
-              New PO
-            </Button>
-            <Button variant="primary" onClick={() => navigate('/invoices/upload-link')}>
-              <Plus className="h-4 w-4" />
-              Generate Upload Link
-            </Button>
-          </div>
+          <Button variant="ghost" onClick={() => navigate('/purchase-orders/new')}>
+            <Plus className="h-4 w-4" />
+            New PO
+          </Button>
         }
       />
 
@@ -114,7 +117,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {approvedUnpaidData.items.map((invoice: any) => (
+                  {approvedUnpaidData.items.map((invoice: Invoice) => (
                     <motion.tr
                       key={invoice.id}
                       initial={{ opacity: 0 }}

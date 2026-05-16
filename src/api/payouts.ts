@@ -1,19 +1,15 @@
 import api from './client';
 import { StripePayoutStatus } from '@/types';
 
-export interface StripePayoutPayload {
-  vendorId: string;
+export interface CreatePayoutPayload {
   invoiceId: string;
   amount: number;
-  currency: string;
+  vendorId: string;
 }
 
-export interface StripeBulkPayoutPayload {
-  payouts: Array<{
-    vendorId: string;
-    invoiceId: string;
-    amount: number;
-  }>;
+export interface BulkPayoutItem {
+  invoiceId: string;
+  amount: number;
 }
 
 export const payoutService = {
@@ -34,13 +30,13 @@ export const payoutService = {
     return response as unknown as StripePayoutStatus;
   },
 
-  createPayout: async (payload: StripePayoutPayload) => {
-    const response = await api.post('/payouts/stripe', payload);
+  createPayout: async (payload: CreatePayoutPayload) => {
+    const response = await api.post('/payouts/trigger', payload);
     return response;
   },
 
-  createBulkPayout: async (payload: StripeBulkPayoutPayload) => {
-    const response = await api.post('/payouts/stripe/bulk', payload);
+  createBulkPayout: async (payouts: BulkPayoutItem[]) => {
+    const response = await api.post('/payouts/trigger', payouts);
     return response;
   },
 };

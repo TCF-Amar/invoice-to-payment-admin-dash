@@ -10,7 +10,7 @@ import { useFilterStore } from '@/store/useFilterStore';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
-import { POStatus } from '@/types';
+import { POStatus, PurchaseOrder } from '@/types';
 
 const PO_STATUSES: { value: POStatus | ''; label: string }[] = [
   { value: '', label: 'All POs' },
@@ -36,7 +36,7 @@ export default function POList() {
   const { data, isLoading } = usePurchaseOrders({ status: poStatus || undefined, page: 1, limit: 20 });
 
   // Filter data based on search query
-  const filteredData = data?.items?.filter((po: any) =>
+  const filteredData = data?.items?.filter((po: PurchaseOrder) =>
     po.poNumber.toLowerCase().includes(poSearch.toLowerCase()) ||
     po.vendor?.name?.toLowerCase().includes(poSearch.toLowerCase())
   ) || [];
@@ -122,7 +122,7 @@ export default function POList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((po: any) => (
+                  {filteredData.map((po: PurchaseOrder) => (
                     <tr
                       key={po.id}
                       className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"

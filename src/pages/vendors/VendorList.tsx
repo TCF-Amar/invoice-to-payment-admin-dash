@@ -4,20 +4,20 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SearchInput } from '@/components/ui/SearchInput';
-import { LoadingSkeleton, TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
+import {  TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DrawerPanel } from '@/components/ui/DrawerPanel';
 import { VendorForm } from '@/components/forms/VendorForm';
 import { useVendors, useCreateVendor, useUpdateVendor, useDeleteVendor } from '@/hooks/useVendors';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { Vendor, CreateVendorPayload } from '@/types';
 
 export default function VendorList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [isVerified, setIsVerified] = useState<boolean | undefined>();
   const [showDrawer, setShowDrawer] = useState(false);
-  const [selectedVendor, setSelectedVendor] = useState<any>(null);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const { data, isLoading } = useVendors({ search, isVerified, page: 1, limit: 20 });
   const createMutation = useCreateVendor();
   const updateMutation = useUpdateVendor(selectedVendor?.id || '');
@@ -28,7 +28,7 @@ export default function VendorList() {
     setShowDrawer(true);
   };
 
-  const handleEdit = (vendor: any) => {
+  const handleEdit = (vendor: Vendor) => {
     setSelectedVendor(vendor);
     setShowDrawer(true);
   };
@@ -43,7 +43,7 @@ export default function VendorList() {
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: CreateVendorPayload) => {
     try {
       if (selectedVendor) {
         await updateMutation.mutateAsync(data);
@@ -112,7 +112,7 @@ export default function VendorList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.items.map((vendor: any) => (
+                  {data.items.map((vendor: Vendor) => (
                     <tr
                       key={vendor.id}
                       className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"

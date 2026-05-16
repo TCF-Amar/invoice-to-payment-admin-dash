@@ -74,7 +74,7 @@ export const statusBgColorMap: Record<string, string> = {
   partial: 'bg-orange-500/10',
   delivered: 'bg-teal-500/10',
   closed: 'bg-emerald-500/10',
-  cancelled: 'bg-zinc-500/10',
+  cancelled: 'bg-rose-500/10',
   received: 'bg-sky-500/10',
   processing: 'bg-blue-500/10',
   validated: 'bg-sky-500/10',
@@ -91,6 +91,7 @@ export const statusBgColorMap: Record<string, string> = {
   medium: 'bg-amber-500/10',
   high: 'bg-orange-500/10',
   urgent: 'bg-rose-500/10',
+  
 };
 
 export const statusTextColorMap: Record<string, string> = {
@@ -102,7 +103,7 @@ export const statusTextColorMap: Record<string, string> = {
   partial: 'text-orange-400',
   delivered: 'text-teal-400',
   closed: 'text-emerald-400',
-  cancelled: 'text-zinc-400',
+  cancelled: 'text-rose-400',
   received: 'text-sky-400',
   processing: 'text-blue-400',
   validated: 'text-sky-400',

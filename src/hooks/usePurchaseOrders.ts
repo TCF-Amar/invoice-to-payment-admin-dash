@@ -112,3 +112,20 @@ export const useDeletePO = () => {
     },
   });
 };
+
+export const useUpdatePOStatus = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ status, reason, actor }: { status: POStatus; reason?: string; actor?: string }) =>
+      poService.updateStatus(id, status, reason, actor),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchase-order', id] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      toast.success('Purchase Order status updated');
+    },
+    onError: () => {
+      toast.error('Failed to update Purchase Order status');
+    },
+  });
+};

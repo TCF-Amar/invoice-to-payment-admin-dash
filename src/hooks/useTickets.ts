@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ticketService } from '@/api/tickets';
-import { Ticket, CreateTicketPayload, TicketStatus, TicketPriority } from '@/types';
+import { CreateTicketPayload, TicketStatus, TicketPriority } from '@/types';
 import toast from 'react-hot-toast';
 
 export const useTickets = (params?: { status?: TicketStatus; priority?: TicketPriority; page?: number; limit?: number }) => {
@@ -33,34 +33,39 @@ export const useCreateTicket = () => {
   });
 };
 
+export const useUpdateTicket = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (updates: { status?: TicketStatus; priority?: TicketPriority }) =>
+      ticketService.updateTicket(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast.success('Ticket updated');
+    },
+    onError: () => {
+      toast.error('Failed to update ticket');
+    },
+  });
+};
+
 export const useUpdateTicketStatus = (id: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (status: TicketStatus) => ticketService.updateStatus(id, status),
+    mutationFn: ({ status, reason }: { status: TicketStatus; reason?: string }) =>
+      ticketService.updateStatus(id, status, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', id] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       toast.success('Ticket status updated');
     },
-    onError: () => {
-      toast.error('Failed to update ticket status');
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message || 'Failed to update ticket status';
+      toast.error(message);
     },
   });
 };
 
-export const useUpdateTicketPriority = (id: string) => {
-  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (priority: TicketPriority) => ticketService.updatePriority(id, priority),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket', id] });
-      queryClient.invalidateQueries({ queryKey: ['tickets'] });
-      toast.success('Ticket priority updated');
-    },
-    onError: () => {
-      toast.error('Failed to update ticket priority');
-    },
-  });
-};

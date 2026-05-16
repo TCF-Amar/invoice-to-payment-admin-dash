@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { payoutService, StripePayoutPayload, StripeBulkPayoutPayload } from '@/api/payouts';
+import { payoutService, CreatePayoutPayload, BulkPayoutItem } from '@/api/payouts';
 import toast from 'react-hot-toast';
 
 export const useStripeStatus = (vendorId: string) => {
@@ -38,7 +38,7 @@ export const useCreatePayout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: StripePayoutPayload) => payoutService.createPayout(payload),
+    mutationFn: (payload: CreatePayoutPayload) => payoutService.createPayout(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices-approved-unpaid'] });
@@ -54,7 +54,7 @@ export const useCreateBulkPayout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: StripeBulkPayoutPayload) => payoutService.createBulkPayout(payload),
+    mutationFn: (payouts: BulkPayoutItem[]) => payoutService.createBulkPayout(payouts),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices-approved-unpaid'] });

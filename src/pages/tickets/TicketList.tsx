@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { useTickets, useCreateTicket } from '@/hooks/useTickets';
-import { LoadingSkeleton, TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
+import {  TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
 import { useVendors } from '@/hooks/useVendors';
 import { useApprovedUnpaidInvoices } from '@/hooks/useInvoices';
+import { Ticket, Vendor, Invoice } from '@/types';
 import toast from 'react-hot-toast';
 
 const ticketSchema = z.object({
@@ -99,7 +100,7 @@ export default function TicketList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.items.map((ticket: any) => (
+                  {data.items.map((ticket: Ticket) => (
                     <tr
                       key={ticket.id}
                       className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
@@ -186,7 +187,7 @@ export default function TicketList() {
               className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-slate-100 focus:border-indigo-500 focus:outline-none"
             >
               <option value="">Select vendor</option>
-              {vendorsData?.items?.map((vendor: any) => (
+              {vendorsData?.items?.map((vendor: Vendor) => (
                 <option key={vendor.id} value={vendor.id}>
                   {vendor.name}
                 </option>
@@ -201,7 +202,7 @@ export default function TicketList() {
               className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-slate-100 focus:border-indigo-500 focus:outline-none"
             >
               <option value="">Select invoice</option>
-              {invoicesData?.items?.map((invoice: any) => (
+              {invoicesData?.items?.map((invoice: Invoice) => (
                 <option key={invoice.id} value={invoice.id}>
                   {invoice.invoiceNumber}
                 </option>

@@ -34,6 +34,8 @@ export interface PurchaseOrder {
   vendor?: Vendor;
   approvedAmount: number;
   remainingAmount: number;
+  taxRate?: number;
+  taxAmount?: number;
   currency: string;
   description?: string;
   status: POStatus;
@@ -100,7 +102,7 @@ export interface AuditLog {
   entityId: string;
   eventType: string;
   actor?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -139,13 +141,15 @@ export interface CreateVendorPayload {
   routingNumber?: string;
 }
 
-export interface UpdateVendorPayload extends Partial<CreateVendorPayload> {}
+export type UpdateVendorPayload = Partial<CreateVendorPayload>;
 
 export interface CreatePOPayload {
   poNumber: string;
   vendorId?: string;
   vendor?: CreateVendorPayload;
   approvedAmount: number;
+  taxRate?: number;
+  taxAmount?: number;
   currency: string;
   description?: string;
   lineItems: POLineItem[];
@@ -183,6 +187,7 @@ export interface UploadToken {
   id: string;
   token: string;
   vendorEmail: string;
+  vendorId?: string;
   poNumber?: string;
   expiresAt: string;
   isUsed: boolean;
@@ -190,8 +195,59 @@ export interface UploadToken {
   createdAt: string;
 }
 
+export interface InvoiceUploadResponse {
+  fileName: string;
+  mimetype: string;
+  size: number;
+  n8nStatus: {
+    sent: boolean;
+    response?: unknown;
+    error?: unknown;
+  };
+}
+
 export interface SendUploadLinkPayload {
+  uploadUrl: string;
   vendorEmail: string;
   poNumber?: string;
   expiresIn: '1h' | '24h' | '7d';
+}
+
+// Upload Link Component Types
+export interface UploadLinkFormData {
+  vendorEmail: string;
+  poNumber: string;
+  expiresIn: '1h' | '24h' | '7d';
+}
+
+// expect responce 
+
+export interface GeneratedLinkMetadata {
+  token: string;
+  url: string;
+  expiresAt: string;
+  createdAt: string;
+  vendorEmail: string;
+  poNumber?: string;
+}
+
+export interface UploadLinkState {
+  // Form inputs
+  vendorEmail: string;
+  poNumber: string;
+  expiresIn: '1h' | '24h' | '7d';
+
+  // Generated link
+  generatedToken: string;
+  generatedUrl: string;
+  expiresAt: string | null;
+
+  // UI state
+  isGenerating: boolean;
+  isSendingEmail: boolean;
+  emailSent: boolean;
+  formDisabled: boolean;
+
+  // Error state
+  error: string | null;
 }
