@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { PaymentButton } from "@/components/ui/PaymentButton";
+import { PaymentConfirmationModal } from "@/components/ui/PaymentConfirmationModal";
 import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/useInvoices";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useVendors } from "@/hooks/useVendors";
+import { useCreatePayment } from "@/hooks/usePayments";
+import { useAuthStore } from "@/store/useAuthStore";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import toast from "react-hot-toast";
@@ -19,11 +23,21 @@ export default function InvoiceDetail() {
   const navigate = useNavigate();
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const { data: invoice, isLoading } = useInvoice(id || "");
   const { data: vendorsData } = useVendors({ limit: 100 });
   const { data: posData } = usePurchaseOrders({ limit: 100 });
   const updateStatusMutation = useUpdateInvoiceStatus(id || "");
+  const createPaymentMutation = useCreatePayment();
+  
+  // Fetch user role from AuthStore
+  const { userRole, fetchUserRole } = useAuthStore();
+
+  // Fetch user role on mount
+  useEffect(() => {
+    fetchUserRole();
+  }, [fetchUserRole]);
 
   // Find related vendor and PO
   const vendor = vendorsData?.items?.find((v) => v.id === invoice?.vendorId);
@@ -56,6 +70,28 @@ export default function InvoiceDetail() {
       setTimeout(() => navigate("/invoices"), 1500);
     } catch {
       // Error handled by mutation
+    }
+  };
+
+  const handlePaymentClick = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentConfirm = async (invoiceId: string) => {
+    if (!invoice) return;
+
+    try {
+      await createPaymentMutation.mutateAsync({
+        invoiceId,
+        amount: invoice.amountDue,
+        currency: invoice.currency,
+      });
+      
+      // Success is handled by the mutation (toast + data refresh)
+      setShowPaymentModal(false);
+    } catch {
+      // Error is handled by the mutation (toast displayed)
+      // Keep modal open to allow retry
     }
   };
 
@@ -369,6 +405,29 @@ export default function InvoiceDetail() {
             </div>
           </CardContent>
         </Card>
+      ) : invoice.status === "approved" ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-slate-100">
+                  Payment Actions
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Process payment for this approved invoice
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <PaymentButton
+                  invoice={invoice}
+                  userRole={userRole}
+                  onClick={handlePaymentClick}
+                  isProcessing={createPaymentMutation.isPending}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <CardContent className="pt-6">
@@ -425,6 +484,15 @@ export default function InvoiceDetail() {
           </div>
         </div>
       </Modal>
+
+      {/* Payment Confirmation Modal */}
+      <PaymentConfirmationModal
+        isOpen={showPaymentModal}
+        invoice={invoice}
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handlePaymentConfirm}
+        isProcessing={createPaymentMutation.isPending}
+      />
     </div>
   );
 }

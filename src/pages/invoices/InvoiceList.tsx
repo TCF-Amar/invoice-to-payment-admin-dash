@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, AlertCircle, Search, X } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -7,8 +7,12 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { PaymentButton } from '@/components/ui/PaymentButton';
+import { PaymentConfirmationModal } from '@/components/ui/PaymentConfirmationModal';
 import { useInvoices } from '@/hooks/useInvoices';
+import { useCreatePayment } from '@/hooks/usePayments';
 import { useFilterStore } from '@/store/useFilterStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
@@ -35,8 +39,25 @@ export default function InvoiceList() {
     setInvoiceStatus,
     setInvoiceSearch,
   } = useFilterStore();
+  
+  // Auth state
+  const { userRole, fetchUserRole } = useAuthStore();
+  
+  // Payment state
+  const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<Invoice | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
+  
   const [showPendingReviewConfirm, setShowPendingReviewConfirm] = useState(false);
-  const { data, isLoading, error } = useInvoices({ status: invoiceStatus || undefined, page: 1, limit: 20 });
+  const { data, isLoading, error, refetch } = useInvoices({ status: invoiceStatus || undefined, page: 1, limit: 20 });
+  
+  // Payment mutation
+  const createPaymentMutation = useCreatePayment();
+  
+  // Fetch user role on mount
+  useEffect(() => {
+    fetchUserRole();
+  }, [fetchUserRole]);
 
   // Filter data based on search query
   const filteredData = data?.items?.filter((invoice: Invoice) =>
@@ -48,6 +69,43 @@ export default function InvoiceList() {
   const handlePendingReviewConfirm = () => {
     setInvoiceStatus('review_pending');
     setShowPendingReviewConfirm(false);
+  };
+
+  // Handle payment button click - open confirmation modal
+  const handlePaymentClick = (invoice: Invoice) => {
+    setSelectedInvoiceForPayment(invoice);
+    setShowPaymentModal(true);
+  };
+
+  // Handle payment confirmation - call payment mutation
+  const handlePaymentConfirm = async (invoiceId: string) => {
+    const invoice = selectedInvoiceForPayment;
+    if (!invoice) return;
+
+    setProcessingPaymentId(invoiceId);
+
+    try {
+      await createPaymentMutation.mutateAsync({
+        invoiceId: invoice.id,
+        amount: invoice.amountDue,
+        currency: invoice.currency,
+      });
+
+      // Payment success: close modal and refresh data
+      setShowPaymentModal(false);
+      setSelectedInvoiceForPayment(null);
+      
+      // Refresh invoice data
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    } catch (error) {
+      // Error handling is done in the mutation's onError callback
+      // Keep modal open to allow retry
+      console.error('Payment failed:', error);
+    } finally {
+      setProcessingPaymentId(null);
+    }
   };
 
   return (
@@ -143,7 +201,7 @@ export default function InvoiceList() {
                     <th className="px-6 py-3 text-left text-sm font-medium text-slate-400">Due</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-slate-400">Status</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-slate-400">Created</th>
-                    <th className="px-6 py-3 text-right text-sm font-medium text-slate-400">Action</th>
+                    <th className="px-6 py-3 text-right text-sm font-medium text-slate-400">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -173,12 +231,20 @@ export default function InvoiceList() {
                         {formatDate(invoice.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button size="sm" variant="ghost" onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/invoices/${invoice.id}`);
-                        }}>
-                          View
-                        </Button>
+                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          {/* Payment Button - only for approved invoices */}
+                          <PaymentButton
+                            invoice={invoice}
+                            userRole={userRole}
+                            onClick={() => handlePaymentClick(invoice)}
+                            isProcessing={processingPaymentId === invoice.id}
+                          />
+                          
+                          {/* View Button */}
+                          <Button size="sm" variant="ghost" onClick={() => navigate(`/invoices/${invoice.id}`)}>
+                            View
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -226,6 +292,18 @@ export default function InvoiceList() {
           </div>
         </div>
       </Modal>
+
+      {/* Payment Confirmation Modal */}
+      <PaymentConfirmationModal
+        isOpen={showPaymentModal}
+        invoice={selectedInvoiceForPayment}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setSelectedInvoiceForPayment(null);
+        }}
+        onConfirm={handlePaymentConfirm}
+        isProcessing={processingPaymentId !== null}
+      />
     </div>
   );
 }

@@ -251,3 +251,89 @@ export interface UploadLinkState {
   // Error state
   error: string | null;
 }
+
+// Payment Types
+export type PaymentStatus = 'pending' | 'completed' | 'failed';
+
+export interface PaymentTransaction {
+  id: string;
+  invoiceId: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  initiatedBy: string;
+  transactionId?: string;
+  errorMessage?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface PaymentLock {
+  invoiceId: string;
+  lockedBy: string;
+  lockedAt: string;
+  expiresAt: string;
+}
+
+export interface PaymentAuditLog {
+  id: string;
+  entityType: 'payment';
+  entityId: string;
+  eventType: 'payment_initiated' | 'payment_completed' | 'payment_failed' | 'payment_rejected';
+  actor: string;
+  metadata: {
+    invoiceId: string;
+    amount: number;
+    currency: string;
+    userRole: 'admin' | 'standard';
+    errorMessage?: string;
+  };
+  createdAt: string;
+}
+
+export interface CreatePaymentRequest {
+  invoiceId: string;
+  amount: number;
+  currency: string;
+}
+
+export interface CreatePaymentResponse {
+  paymentId: string;
+  invoiceId: string;
+  amount: number;
+  currency: string;
+  status: 'completed' | 'failed';
+  transactionId?: string;
+  errorMessage?: string;
+  processedAt: string;
+}
+
+// Authentication and Authorization Types
+export type UserRole = 'admin' | 'standard';
+
+export interface AuthState {
+  // User identity
+  userId: string | null;
+  userEmail: string | null;
+  
+  // Role information
+  userRole: UserRole | null;
+  roleLoadedAt: number | null;
+  
+  // Loading states
+  isLoadingRole: boolean;
+  roleError: string | null;
+  
+  // Actions
+  setUserRole: (role: UserRole) => void;
+  fetchUserRole: () => Promise<void>;
+  clearAuth: () => void;
+}
+
+export interface AuthMeResponse {
+  userId: string;
+  email: string;
+  role: UserRole;
+  permissions: string[];
+  createdAt: string;
+}
