@@ -330,10 +330,55 @@ export interface AuthState {
   clearAuth: () => void;
 }
 
+/**
+ * Normalized shape used throughout the app. The backend returns the
+ * primary key as `id`; we surface it as `userId` to keep store/UI
+ * code consistent. Normalization happens in `fetchAuthMe`.
+ */
 export interface AuthMeResponse {
   userId: string;
   email: string;
   role: UserRole;
-  permissions: string[];
-  createdAt: string;
+  name?: string;
+  permissions?: string[];
+  createdAt?: string;
+}
+
+/**
+ * Raw shape returned by the backend (`/auth/login`, `/auth/me`).
+ * The API uses `id` (not `userId`) and includes the token alongside
+ * the user fields on login. Used internally by `auth.ts` before
+ * normalization.
+ */
+export interface RawAuthApiUser {
+  id: string;
+  email: string;
+  name?: string;
+  role: UserRole;
+  token?: string;
+  permissions?: string[];
+  createdAt?: string;
+}
+
+// Login API Request/Response Models
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * Normalized login response surfaced to callers. The backend returns
+ * a flat `{ id, email, name, role, token }` payload; `login()`
+ * normalizes it into this shape so downstream code can read
+ * `result.user.userId`.
+ */
+export interface LoginResponse {
+  token: string;
+  user: AuthMeResponse;
+}
+
+// Login Form Data (matches Zod loginSchema in LoginForm)
+export interface LoginFormData {
+  email: string;
+  password: string;
 }

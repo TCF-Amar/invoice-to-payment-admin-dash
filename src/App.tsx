@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import LoginPage from '@/pages/auth/LoginPage';
 import Dashboard from '@/pages/Dashboard';
 import VendorList from '@/pages/vendors/VendorList';
 import VendorDetail from '@/pages/vendors/VendorDetail';
@@ -31,25 +33,28 @@ function App() {
       <Router>
         <Routes>
           <Route path="/upload-invoice" element={<VendorUpload />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route
             path="/*"
             element={
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/vendors" element={<VendorList />} />
-                  <Route path="/vendors/:id" element={<VendorDetail />} />
-                  <Route path="/purchase-orders" element={<POList />} />
-                  <Route path="/purchase-orders/new" element={<POCreate />} />
-                  <Route path="/purchase-orders/:id" element={<PODetail />} />
-                  <Route path="/invoices" element={<InvoiceList />} />
-                  <Route path="/invoices/:id" element={<InvoiceDetail />} />
-                  <Route path="/payouts" element={<PayoutDashboard />} />
-                  <Route path="/tickets" element={<TicketList />} />
-                  <Route path="/tickets/:id" element={<TicketDetail />} />
-                  <Route path="/settings" element={<Settings />} />
-                </Routes>
-              </AppLayout>
+              <ProtectedRoute>
+                <AppLayout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/vendors" element={<VendorList />} />
+                    <Route path="/vendors/:id" element={<VendorDetail />} />
+                    <Route path="/purchase-orders" element={<POList />} />
+                    <Route path="/purchase-orders/new" element={<POCreate />} />
+                    <Route path="/purchase-orders/:id" element={<PODetail />} />
+                    <Route path="/invoices" element={<InvoiceList />} />
+                    <Route path="/invoices/:id" element={<InvoiceDetail />} />
+                    <Route path="/payouts" element={<PayoutDashboard />} />
+                    <Route path="/tickets" element={<TicketList />} />
+                    <Route path="/tickets/:id" element={<TicketDetail />} />
+                    <Route path="/settings" element={<Settings />} />
+                  </Routes>
+                </AppLayout>
+              </ProtectedRoute>
             }
           />
         </Routes>

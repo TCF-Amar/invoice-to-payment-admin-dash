@@ -233,13 +233,14 @@ export default function InvoiceList() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                           {/* Payment Button - only for approved invoices */}
+                       { 
                           <PaymentButton
                             invoice={invoice}
                             userRole={userRole}
                             onClick={() => handlePaymentClick(invoice)}
                             isProcessing={processingPaymentId === invoice.id}
                           />
-                          
+                          }
                           {/* View Button */}
                           <Button size="sm" variant="ghost" onClick={() => navigate(`/invoices/${invoice.id}`)}>
                             View
