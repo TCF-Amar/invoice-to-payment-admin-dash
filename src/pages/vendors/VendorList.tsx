@@ -176,7 +176,7 @@ export default function VendorList() {
         title={selectedVendor ? 'Edit Vendor' : 'Create Vendor'}
       >
         <VendorForm
-          initialData={selectedVendor}
+          initialData={selectedVendor || undefined}
           onSubmit={handleSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
         />

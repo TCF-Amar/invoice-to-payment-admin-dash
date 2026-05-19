@@ -28,7 +28,7 @@ const toPaginatedResponse = <T,>(data: T[] | PaginatedResponse<T> | any): Pagina
 export const invoiceService = {
   list: async (params?: { status?: InvoiceStatus; vendorId?: string; page?: number; limit?: number }) => {
     const response = await api.get<PaginatedResponse<Invoice>>('/invoices', { params });
-    return toPaginatedResponse(response as unknown as PaginatedResponse<Invoice> | Invoice[]);
+    return toPaginatedResponse<Invoice>(response as unknown as PaginatedResponse<Invoice> | Invoice[]);
   },
 
   getById: async (id: string) => {
@@ -43,7 +43,7 @@ export const invoiceService = {
 
   getApprovedUnpaid: async (params?: { page?: number; limit?: number }) => {
     const response = await api.get<PaginatedResponse<Invoice>>('/invoices/approved-unpaid', { params });
-    return toPaginatedResponse(response as unknown as PaginatedResponse<Invoice> | Invoice[]);
+    return toPaginatedResponse<Invoice>(response as unknown as PaginatedResponse<Invoice> | Invoice[]);
   },
 
   checkDuplicate: async (invoiceNumber: string) => {

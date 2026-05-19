@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  invoice-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: invoice-portal:latest
+    container_name: invoice-portal
+    ports:
+      - "8080:80"
+    restart: unless-stopped

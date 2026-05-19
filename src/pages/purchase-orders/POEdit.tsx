@@ -15,8 +15,8 @@ import toast from "react-hot-toast";
 
 const poDetailsSchema = z.object({
   poNumber: z.string().min(1, "PO number required"),
-  taxRate: z.number().min(0).default(0),
-  currency: z.string().default("USD"),
+  taxRate: z.number().min(0),
+  currency: z.string(),
   description: z.string().optional(),
   deliveryDate: z.string().optional(),
 });

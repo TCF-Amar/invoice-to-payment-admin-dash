@@ -303,6 +303,53 @@ GET    /payouts/stripe/status/:vendorId Stripe account status
 
 ---
 
+## Docker
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build — Node 20 Alpine builds the SPA, Nginx 1.27 Alpine serves it |
+| `nginx.conf` | Nginx config with React Router fallback, asset caching, gzip, security headers |
+| `.dockerignore` | Excludes `node_modules`, `dist`, `.git`, etc. from build context |
+| `docker-compose.yml` | Single-service compose — maps host `:3000` → container `:80` |
+
+### Build & run
+
+```bash
+# Build image and start container
+docker compose up --build
+
+# App available at http://localhost:3000
+```
+
+```bash
+# Run in background
+docker compose up --build -d
+
+# Stop
+docker compose down
+```
+
+### Build image only
+
+```bash
+docker build -t invoice-portal:latest .
+docker run -p 3000:80 invoice-portal:latest
+```
+
+### Runtime API URL
+
+The API base URL is read from `localStorage` at runtime (set in the Settings page or via browser console):
+
+```js
+localStorage.setItem('api_base_url', 'http://your-api.com/api/v1');
+```
+
+Because this is a client-side SPA, no environment variables are injected into the container at runtime — the URL is configured by the user in the browser.
+
+---
+
 ## Changelog
 
 ### v1 (current)
