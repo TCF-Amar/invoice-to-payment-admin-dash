@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CheckCircle, XCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -9,11 +9,12 @@ import { Modal } from "@/components/ui/Modal";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { PaymentButton } from "@/components/ui/PaymentButton";
 import { PaymentConfirmationModal } from "@/components/ui/PaymentConfirmationModal";
+import { PayoutButton } from "@/components/ui/PayoutButton";
 import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/useInvoices";
 import { usePurchaseOrders } from "@/hooks/usePurchaseOrders";
 import { useVendors } from "@/hooks/useVendors";
 import { useCreatePayment } from "@/hooks/usePayments";
-import { useAuthStore } from "@/store/useAuthStore";
+import { useCreatePayout } from "@/hooks/usePayouts";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { formatDate } from "@/utils/formatDate";
 import toast from "react-hot-toast";
@@ -30,14 +31,7 @@ export default function InvoiceDetail() {
   const { data: posData } = usePurchaseOrders({ limit: 100 });
   const updateStatusMutation = useUpdateInvoiceStatus(id || "");
   const createPaymentMutation = useCreatePayment();
-  
-  // Fetch user role from AuthStore
-  const { userRole, fetchUserRole } = useAuthStore();
-
-  // Fetch user role on mount
-  useEffect(() => {
-    fetchUserRole();
-  }, [fetchUserRole]);
+  const createPayoutMutation = useCreatePayout();
 
   // Find related vendor and PO
   const vendor = vendorsData?.items?.find((v) => v.id === invoice?.vendorId);
@@ -75,6 +69,19 @@ export default function InvoiceDetail() {
 
   const handlePaymentClick = () => {
     setShowPaymentModal(true);
+  };
+
+  const handlePayoutClick = async () => {
+    if (!invoice) return;
+    try {
+      await createPayoutMutation.mutateAsync({
+        invoiceId: invoice.id,
+        amount: invoice.amountDue || invoice.totalAmount,
+        vendorId: invoice.vendorId,
+      });
+    } catch {
+      // error handled by mutation hook
+    }
   };
 
   const handlePaymentConfirm = async (invoiceId: string) => {
@@ -420,9 +427,13 @@ export default function InvoiceDetail() {
               <div className="flex gap-3">
                 <PaymentButton
                   invoice={invoice}
-                  userRole={userRole}
                   onClick={handlePaymentClick}
                   isProcessing={createPaymentMutation.isPending}
+                />
+                <PayoutButton
+                  invoice={invoice}
+                  onClick={handlePayoutClick}
+                  isProcessing={createPayoutMutation.isPending}
                 />
               </div>
             </div>

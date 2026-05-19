@@ -285,7 +285,6 @@ export interface PaymentAuditLog {
     invoiceId: string;
     amount: number;
     currency: string;
-    userRole: 'admin' | 'standard';
     errorMessage?: string;
   };
   createdAt: string;
@@ -308,32 +307,3 @@ export interface CreatePaymentResponse {
   processedAt: string;
 }
 
-// Authentication and Authorization Types
-export type UserRole = 'admin' | 'standard';
-
-export interface AuthState {
-  // User identity
-  userId: string | null;
-  userEmail: string | null;
-  
-  // Role information
-  userRole: UserRole | null;
-  roleLoadedAt: number | null;
-  
-  // Loading states
-  isLoadingRole: boolean;
-  roleError: string | null;
-  
-  // Actions
-  setUserRole: (role: UserRole) => void;
-  fetchUserRole: () => Promise<void>;
-  clearAuth: () => void;
-}
-
-export interface AuthMeResponse {
-  userId: string;
-  email: string;
-  role: UserRole;
-  permissions: string[];
-  createdAt: string;
-}

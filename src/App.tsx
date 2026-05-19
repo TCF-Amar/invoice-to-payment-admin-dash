@@ -8,6 +8,7 @@ import VendorDetail from '@/pages/vendors/VendorDetail';
 import POList from '@/pages/purchase-orders/POList';
 import POCreate from '@/pages/purchase-orders/POCreate';
 import PODetail from '@/pages/purchase-orders/PODetail';
+import POEdit from '@/pages/purchase-orders/POEdit';
 import InvoiceList from '@/pages/invoices/InvoiceList';
 import InvoiceDetail from '@/pages/invoices/InvoiceDetail';
 import VendorUpload from '@/pages/invoices/VendorUpload';
@@ -41,6 +42,7 @@ function App() {
                   <Route path="/vendors/:id" element={<VendorDetail />} />
                   <Route path="/purchase-orders" element={<POList />} />
                   <Route path="/purchase-orders/new" element={<POCreate />} />
+                  <Route path="/purchase-orders/:id/edit" element={<POEdit />} />
                   <Route path="/purchase-orders/:id" element={<PODetail />} />
                   <Route path="/invoices" element={<InvoiceList />} />
                   <Route path="/invoices/:id" element={<InvoiceDetail />} />

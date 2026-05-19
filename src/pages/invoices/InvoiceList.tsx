@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, AlertCircle, Search, X } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -9,10 +9,11 @@ import { TableRowSkeleton } from '@/components/ui/LoadingSkeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PaymentButton } from '@/components/ui/PaymentButton';
 import { PaymentConfirmationModal } from '@/components/ui/PaymentConfirmationModal';
+import { PayoutButton } from '@/components/ui/PayoutButton';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useCreatePayment } from '@/hooks/usePayments';
+import { useCreatePayout } from '@/hooks/usePayouts';
 import { useFilterStore } from '@/store/useFilterStore';
-import { useAuthStore } from '@/store/useAuthStore';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import { useNavigate } from 'react-router-dom';
@@ -39,25 +40,19 @@ export default function InvoiceList() {
     setInvoiceStatus,
     setInvoiceSearch,
   } = useFilterStore();
-  
-  // Auth state
-  const { userRole, fetchUserRole } = useAuthStore();
-  
+
   // Payment state
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<Invoice | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
-  
+  const [processingPayoutId, setProcessingPayoutId] = useState<string | null>(null);
+
   const [showPendingReviewConfirm, setShowPendingReviewConfirm] = useState(false);
   const { data, isLoading, error, refetch } = useInvoices({ status: invoiceStatus || undefined, page: 1, limit: 20 });
-  
-  // Payment mutation
+
+  // Payment / payout mutations
   const createPaymentMutation = useCreatePayment();
-  
-  // Fetch user role on mount
-  useEffect(() => {
-    fetchUserRole();
-  }, [fetchUserRole]);
+  const createPayoutMutation = useCreatePayout();
 
   // Filter data based on search query
   const filteredData = data?.items?.filter((invoice: Invoice) =>
@@ -105,6 +100,24 @@ export default function InvoiceList() {
       console.error('Payment failed:', error);
     } finally {
       setProcessingPaymentId(null);
+    }
+  };
+
+  // Handle payout button click
+  const handlePayoutClick = async (invoice: Invoice) => {
+    if (!invoice.vendorId) return;
+    setProcessingPayoutId(invoice.id);
+    try {
+      await createPayoutMutation.mutateAsync({
+        invoiceId: invoice.id,
+        amount: invoice.amountDue || invoice.totalAmount,
+        vendorId: invoice.vendorId,
+      });
+      setTimeout(() => refetch(), 1000);
+    } catch {
+      // error handled by mutation hook
+    } finally {
+      setProcessingPayoutId(null);
     }
   };
 
@@ -235,11 +248,17 @@ export default function InvoiceList() {
                           {/* Payment Button - only for approved invoices */}
                           <PaymentButton
                             invoice={invoice}
-                            userRole={userRole}
                             onClick={() => handlePaymentClick(invoice)}
                             isProcessing={processingPaymentId === invoice.id}
                           />
-                          
+
+                          {/* Payout Button - approved or paid invoices */}
+                          <PayoutButton
+                            invoice={invoice}
+                            onClick={() => handlePayoutClick(invoice)}
+                            isProcessing={processingPayoutId === invoice.id}
+                          />
+
                           {/* View Button */}
                           <Button size="sm" variant="ghost" onClick={() => navigate(`/invoices/${invoice.id}`)}>
                             View

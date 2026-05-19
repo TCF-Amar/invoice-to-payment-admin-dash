@@ -1,4 +1,4 @@
-import { Plus, Search, X } from 'lucide-react';
+import { Plus, Search, X, Pencil } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -143,12 +143,25 @@ export default function POList() {
                         {formatDate(po.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Button size="sm" variant="ghost" onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/purchase-orders/${po.id}`);
-                        }}>
-                          View
-                        </Button>
+                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          {po.status === 'draft' && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => navigate(`/purchase-orders/${po.id}/edit`)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Edit
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigate(`/purchase-orders/${po.id}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

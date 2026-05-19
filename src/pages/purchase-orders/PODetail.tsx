@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, AlertCircle, Package, XCircle } from "lucide-react";
+import { ChevronRight, AlertCircle, Package, XCircle, Pencil } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -323,11 +323,18 @@ export default function PODetail() {
       <PageHeader
         title={po.poNumber}
         description={`Status: ${po.status}`}
-        onBack={() => navigate(-1)}
+        onBack={() => navigate('/purchase-orders')}
         action={
           <div className="flex gap-2">
             {po.status === "draft" && (
               <>
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(`/purchase-orders/${po.id}/edit`)}
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
                 <Button
                   variant="primary"
                   onClick={handleSubmit}

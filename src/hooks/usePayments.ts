@@ -43,9 +43,11 @@ export const useCreatePayment = () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['invoices-approved-unpaid'] });
 
-      // Display success notification with invoice details
+      // Display success notification with invoice details (fallback to request payload if response is missing fields)
+      const amount = data?.amount ?? variables.amount;
+      const currency = data?.currency ?? variables.currency;
       toast.success(
-        `Payment of ${data.currency} ${data.amount.toFixed(2)} processed successfully`,
+        `Payment of ${currency} ${Number(amount).toFixed(2)} processed successfully`,
         { duration: 4000 }
       );
     },

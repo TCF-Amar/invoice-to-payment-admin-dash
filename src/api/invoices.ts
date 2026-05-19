@@ -48,6 +48,8 @@ export const invoiceService = {
 
   checkDuplicate: async (invoiceNumber: string) => {
     const response = await api.get<{ isDuplicate: boolean }>(`/invoices/duplicate/${invoiceNumber}`);
+    console.log(response);
+    
     return response as unknown as { isDuplicate: boolean };
   },
 
